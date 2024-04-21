@@ -10,6 +10,9 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         添加
       </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleUpload">
+        上传图片/音频
+      </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-refresh" @click="handleCache">
         清空缓存
       </el-button>
@@ -127,6 +130,19 @@
           <source :src="audio.url" />
         </audio>
       </el-dialog>
+
+      <el-dialog title="文件上传" :visible.sync="dialogUploaderVisible" width="35%" destroy-on-close="true">
+        <el-upload
+          class="upload-demo"
+          action="#"
+          :auto-upload="false"
+          :on-change="chunkUpload"
+          :limit="1">
+          <el-button size="small" type="primary">点击上传</el-button>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png/mp3文件</div>
+        </el-upload>
+        <el-progress :percentage="50" :color="customColors"></el-progress>
+      </el-dialog>
   </div>
 </template>
 
@@ -135,6 +151,8 @@ import typeAPI from '@/api/system/type/type'
 import voiceAPI from '@/api/system/voice/voice'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { getFileMd5 } from '../../utils/md5Util'
+
 
 export default {
   directives: { waves },
@@ -176,7 +194,8 @@ export default {
         name: '',
         url: ''
       },
-      dialogAudioVisible: false
+      dialogAudioVisible: false,
+      dialogUploaderVisible: false
     }
   },
   created() {
@@ -298,6 +317,34 @@ export default {
           })
         })
       }
+    ,handleUpload() {
+      this.dialogUploaderVisible = true
+    },
+    // 文件上传主要函数
+    async chunkUpload(uploadFile, uploadFiles) {
+        // // 文件信息
+        // let fileRaw = uploadFile.raw
+        // console.log(fileRaw)
+        // try {
+        //   fileMd5 = await getFileMd5(fileRaw)
+        // } catch(e) {
+        //   console.error('[error]', e)
+        // }
+        // if(!fileMd5) return
+        // // 每片的大小为 0.5M 可调整
+        // const chunkSize = 0.5 * 1024
+        // // 文件分片储存
+        // let chunkList = []
+        // function chunkPush(page = 1) {
+        //   chunkList.push(fileRaw.slice((page - 1) * chunkSize, page * chunkSize))
+        //   if(page * chunkSize < fileRaw.size) {
+        //     chunkPush(page + 1)
+        //   }
+        // }
+        // chunkPush()
+        // console.log(chunkList, 'chunkList----->>>')
+        // saveFileChunk(chunkList, fileMd5, fileRaw.name)
+    }
   }
 }
 </script>

@@ -48,16 +48,6 @@ import Layout from '@/layout'
         component: () => import('@/views/dashboard/index'),
         meta: { title: '控制台', icon: 'dashboard' }
       }]
-    },{
-      path: '/order',
-      component: Layout,
-      redirect: '/order/list',
-      children: [{
-        path: 'list',
-        name: 'list',
-        component: () => import('@/views/order/list'),
-        meta: { title: '订单管理', icon: 'el-icon-s-tools' }
-      }]
     },
     
     {
