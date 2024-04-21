@@ -149,6 +149,7 @@
 <script>
 import typeAPI from '@/api/system/type/type'
 import voiceAPI from '@/api/system/voice/voice'
+import fileChunkAPI from '@/api/system/fileChunk/fileChunk'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { getFileMd5 } from '../../utils/md5Util'
@@ -321,29 +322,42 @@ export default {
       this.dialogUploaderVisible = true
     },
     // 文件上传主要函数
-    async chunkUpload(uploadFile, uploadFiles) {
-        // // 文件信息
-        // let fileRaw = uploadFile.raw
-        // console.log(fileRaw)
-        // try {
-        //   fileMd5 = await getFileMd5(fileRaw)
-        // } catch(e) {
-        //   console.error('[error]', e)
-        // }
-        // if(!fileMd5) return
-        // // 每片的大小为 0.5M 可调整
-        // const chunkSize = 0.5 * 1024
-        // // 文件分片储存
-        // let chunkList = []
-        // function chunkPush(page = 1) {
-        //   chunkList.push(fileRaw.slice((page - 1) * chunkSize, page * chunkSize))
-        //   if(page * chunkSize < fileRaw.size) {
-        //     chunkPush(page + 1)
-        //   }
-        // }
-        // chunkPush()
-        // console.log(chunkList, 'chunkList----->>>')
-        // saveFileChunk(chunkList, fileMd5, fileRaw.name)
+    chunkUpload(uploadFile, uploadFiles) {
+        // ==========进行切片
+        // 文件信息
+        let fileRaw = uploadFile.raw
+        console.log(fileRaw)
+        getFileMd5(fileRaw).then(res => {
+          let fileMd5 = res
+          // 分片数量为 8 可调整
+          const chunkNum = 8
+          let chunkSize = parseInt(fileRaw.size / chunkNum)
+          // 文件分片储存
+          let chunkList = []
+          // 封装请求
+          for (let i = 0; i < chunkNum; i ++) {
+            let formData = new FormData()
+            formData.append('name', fileRaw.name)
+            formData.append('md5', fileMd5)
+            formData.append('start', i * chunkSize)
+            formData.append('size', chunkSize)
+            formData.append('chunks', chunkNum)
+            formData.append('chunk', i)
+            if (i != chunkNum - 1) {
+              formData.append('file', fileRaw.slice(i * chunkSize, (i + 1) * chunkSize))
+            } else {
+              formData.append('file', fileRaw.slice(i * chunkSize))
+            }
+            chunkList.push(formData)
+          }
+          console.log(chunkList, 'chunkList----->>>')
+          // ==========正式上传
+          for (let i = 0; i < chunkNum; i ++) {
+            fileChunkAPI.uploadFile(chunkList[i]).then(response => { 
+              console.log("upload success chunk = " + i)
+            })
+          }
+        })
     }
   }
 }
