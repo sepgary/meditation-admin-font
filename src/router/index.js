@@ -67,6 +67,18 @@ import Layout from '@/layout'
           name: 'userEvent',
           component: () => import('@/views/user/userEvent'),
           meta: { title: '用户行为', icon: 'el-icon-s-tools' }
+        },
+        {
+          path: 'userEvent',
+          name: 'userEvent',
+          component: () => import('@/views/user/userEvent'),
+          meta: { title: '埋点统计', icon: 'el-icon-s-tools' }
+        },
+        {
+          path: 'experiment',
+          name: 'experiment',
+          component: () => import('@/views/user/experiment'),
+          meta: { title: '个性配置', icon: 'el-icon-s-tools' }
         }
       ]
     },

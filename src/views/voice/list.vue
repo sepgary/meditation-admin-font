@@ -139,9 +139,14 @@
           :on-change="chunkUpload"
           :limit="1">
           <el-button size="small" type="primary">点击上传</el-button>
-          <div slot="tip" class="el-upload__tip">只能上传jpg/png/mp3文件</div>
+          <template v-if="uploadFilePath === ''">    
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png/mp3文件</div>
+          </template>
+          <template v-if="uploadFilePath != ''">    
+            <div slot="tip" class="el-upload__tip" style="color: red;">上传地址: {{ uploadFilePath }}</div>
+          </template>
         </el-upload>
-        <el-progress :percentage="50" :color="customColors"></el-progress>
+        <el-progress :percentage="uploadPercent" :color="customColors"></el-progress>
       </el-dialog>
   </div>
 </template>
@@ -195,6 +200,9 @@ export default {
         name: '',
         url: ''
       },
+      uploadPercent: 0,
+      uploadFileId: 0,
+      uploadFilePath: '',
       dialogAudioVisible: false,
       dialogUploaderVisible: false
     }
@@ -301,8 +309,7 @@ export default {
         })
       })
     }
-    ,
-      handleCache() {
+    ,handleCache() {
         this.$confirm('是否清空当前模块缓存?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -323,42 +330,68 @@ export default {
     },
     // 文件上传主要函数
     chunkUpload(uploadFile, uploadFiles) {
-        // ==========进行切片
-        // 文件信息
-        let fileRaw = uploadFile.raw
-        console.log(fileRaw)
-        getFileMd5(fileRaw).then(res => {
-          let fileMd5 = res
-          // 分片数量为 8 可调整
-          const chunkNum = 8
-          let chunkSize = parseInt(fileRaw.size / chunkNum)
-          // 文件分片储存
-          let chunkList = []
-          // 封装请求
-          for (let i = 0; i < chunkNum; i ++) {
-            let formData = new FormData()
-            formData.append('name', fileRaw.name)
-            formData.append('md5', fileMd5)
-            formData.append('start', i * chunkSize)
-            formData.append('size', chunkSize)
-            formData.append('chunks', chunkNum)
-            formData.append('chunk', i)
-            if (i != chunkNum - 1) {
-              formData.append('file', fileRaw.slice(i * chunkSize, (i + 1) * chunkSize))
-            } else {
-              formData.append('file', fileRaw.slice(i * chunkSize))
-            }
-            chunkList.push(formData)
+      // 重置进度条
+      this.uploadPercent = 0
+      // ==========进行切片
+      // 文件信息
+      let fileRaw = uploadFile.raw
+      console.log(fileRaw)
+      getFileMd5(fileRaw).then(res => {
+        let fileMd5 = res
+        // 分片数量为 8 可调整
+        const chunkNum = 8
+        let chunkSize = parseInt(fileRaw.size / chunkNum)
+        // 文件分片储存
+        let chunkList = []
+        // 封装请求
+        for (let i = 0; i < chunkNum; i++) {
+          let formData = new FormData()
+          formData.append('name', fileRaw.name)
+          formData.append('md5', fileMd5)
+          formData.append('start', i * chunkSize)
+          formData.append('size', chunkSize)
+          formData.append('chunks', chunkNum)
+          formData.append('chunk', i)
+          if (i != chunkNum - 1) {
+            formData.append('file', fileRaw.slice(i * chunkSize, (i + 1) * chunkSize))
+          } else {
+            formData.append('file', fileRaw.slice(i * chunkSize))
           }
-          console.log(chunkList, 'chunkList----->>>')
-          // ==========正式上传
-          for (let i = 0; i < chunkNum; i ++) {
-            fileChunkAPI.uploadFile(chunkList[i]).then(response => { 
-              console.log("upload success chunk = " + i)
-            })
-          }
+          chunkList.push(formData)
+        }
+        console.log(chunkList, 'chunkList----->>>')
+        let fileId = 0
+        // ==========正式上传
+        const uploadPromises = chunkList.map(formData => {
+          return fileChunkAPI.uploadFile(formData).then(res => {
+            console.log("upload success chunk = " + formData.get('chunk'))
+            this.uploadPercent += (100 / 8)
+            fileId = res.data
+          })
         })
+
+        // 使用 Promise.all() 等待所有文件块上传完成
+        Promise.all(uploadPromises)
+          .then(() => {
+            // 所有文件块上传完成后执行验证
+            fileChunkAPI.verifyFile(fileId).then(res => {
+              if (res.data.status === 1) {
+                console.log('success===========')
+                // 调用后端保存文件接口上传到云端
+                fileChunkAPI.uploadFileToOSS(fileId).then(res => {
+                  console.log(res.data)
+                  this.uploadFilePath = res.data
+                })
+              }
+            })
+          })
+          .catch(error => {
+            // 处理错误
+            console.error('Error uploading chunks:', error)
+          })
+      })
     }
+
   }
 }
 </script>

@@ -15,5 +15,11 @@ export default {
             url: `${api_name}/verify/${fileId}`,
             method: 'get'
         })
+    },
+    uploadFileToOSS(fileId) {
+        return request({
+            url: `${api_name}/upload/${fileId}`,
+            method: 'get'
+        })
     }
 }
