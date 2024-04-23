@@ -69,9 +69,9 @@ import Layout from '@/layout'
           meta: { title: '用户行为', icon: 'el-icon-s-tools' }
         },
         {
-          path: 'userEvent',
-          name: 'userEvent',
-          component: () => import('@/views/user/userEvent'),
+          path: 'statistic',
+          name: 'statistic',
+          component: () => import('@/views/user/statistic'),
           meta: { title: '埋点统计', icon: 'el-icon-s-tools' }
         },
         {
