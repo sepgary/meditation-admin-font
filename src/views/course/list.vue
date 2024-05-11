@@ -46,21 +46,6 @@
           
           <el-table-column label="详情" prop="courseMain" width="200" :show-overflow-tooltip='true'/>
   
-          <el-table-column label="封面" width="120"  align="center">
-              <template slot-scope="{row}">
-                  <el-popover placement="top-start" title="" trigger="hover">
-                      <img :src="row.picture" alt="" style="width: 180px;height: 180px">
-                      <img slot="reference" :src="row.picture" style="width: 80px;height: 80px">
-                  </el-popover>
-              </template>
-          </el-table-column>
-  
-          <el-table-column label="课程数量" prop="num" align="center" width="80">
-          <template slot-scope="{row}">
-              <span>{{ row.single === true ? 1 : row.num}}</span>
-          </template>
-          </el-table-column>
-  
           <el-table-column label="创建时间" align="center">
           <template slot-scope="{row}">
               <span>{{ row.gmtCreate}}</span>
@@ -97,9 +82,6 @@
           </el-form-item>
           <el-form-item label="详情" prop="courseMain">
             <el-input type="textarea" v-model="temp.courseMain" />
-          </el-form-item>
-          <el-form-item label="封面" prop="picture">
-            <el-input v-model="temp.picture" />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">

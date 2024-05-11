@@ -49,15 +49,6 @@
             </template>
         </el-table-column>
 
-
-        <el-table-column label="标签" prop="num" align="center" width="200">
-          <template slot-scope="{row}">
-            <el-tag v-for="item in row.tags" :key="item"> {{ item }} </el-tag>
-          </template>
-        </el-table-column>
-        
-        <el-table-column label="详情" prop="courseMain" width="200" :show-overflow-tooltip='true'/>
-
         <el-table-column label="封面" width="120"  align="center">
             <template slot-scope="{row}">
                 <el-popover placement="top-start" title="" trigger="hover">
@@ -100,12 +91,6 @@
         <el-form :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
           <el-form-item label="名称" prop="voiceName">
             <el-input v-model="temp.voiceName" />
-          </el-form-item>
-          <el-form-item label="标签" prop="voiceTag">
-            <el-input v-model="temp.voiceTag" />
-          </el-form-item>
-          <el-form-item label="详情" prop="voiceMain">
-            <el-input type="textarea" v-model="temp.voiceMain" />
           </el-form-item>
           <el-form-item label="封面" prop="picture">
             <el-input v-model="temp.picture" />
